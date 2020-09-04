@@ -5,15 +5,17 @@ namespace conway
 {
     class Runner
     {
-        private static int PlayfieldSize = new Int32();
+        private static int StarterSize = new Int32();
+        private static int MaxStarterSize = 50;
         static void Main(string[] args)
         {
             do
             {
               Console.WriteLine("Field size? "); 
-              PlayfieldSize = int.Parse(Console.ReadLine());
-            } while (PlayfieldSize == 0 || PlayfieldSize > 50 );
-            ConwayGame conway = new ConwayGame(PlayfieldSize);
+              StarterSize = int.Parse(Console.ReadLine());
+            } while (StarterSize < 1 || StarterSize > MaxStarterSize );
+            ConwayGame conway = new ConwayGame(StarterSize);
+            conway.Run();
         }
     }
 }
