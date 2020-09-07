@@ -51,19 +51,29 @@ namespace conway.lib
                     switch (Neighbours)
                     {
                         case 2:
+                            //TODO: copy over to new List
                             break;
                         case 3:
                             Exists = cells.TryGetValue(new CellCoords(x, y), out Dummy);
                             if (Exists == false)
                             {
-                                //TODO: add alive Cell if dead and heat+
+                                //TODO: add alive Cell to new List if dead and heat+
+                            }
+                            else
+                            {
+
+                                //TODO: copy over to new List
                             }
                             break;
                         default:
                             Exists = cells.TryGetValue(new CellCoords(x, y), out Dummy);
                             if (Exists)
                             {
-                                //TODO: kill cell if alive and heat-
+                                //TODO: kill cell to new List if alive and heat-
+                            }
+                            else
+                            {
+                                //TODO: copy over to new List
                             }
                             break;
                     }
