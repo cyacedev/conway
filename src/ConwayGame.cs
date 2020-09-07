@@ -17,6 +17,10 @@ namespace conway.lib
         public void Run()
         {
             GenerateDefinedAmountOfCells();
+            for (int i = 0; i < 1000; i++)
+            {
+                IterateSimulation();
+            }
         }
 
         private void GenerateDefinedAmountOfCells()
@@ -33,50 +37,60 @@ namespace conway.lib
                 } while (added == false);
             }
         }
-    }
 
-    class CellCoords
-    {
-        public int x { get; private set; }
-        public int y { get; private set; }
-
-        public CellCoords(int x, int y)
+        private void IterateSimulation()
         {
-            this.x = x;
-            this.y = y;
-        }
-    }
-
-    class CellCoordsComparer : IEqualityComparer<CellCoords>
-    {
-        public bool Equals([AllowNull] CellCoords first, [AllowNull] CellCoords second)
-        {
-            if (first == null && second == null)
-                return true;
-            else if (first == null || second == null)
-                return false;
-            else if (first.x == second.x && first.y == second.y)
-                return true;
-            else
-                return false;
-        }
-
-        public int GetHashCode([DisallowNull] CellCoords obj)
-        {
-            unchecked // Overflow is fine, just wrap
+            int Neighbours = 0;
+            Cell Dummy;
+            bool Exists;
+            for (int x = StarterSize * -1; x < StarterSize; x++)
             {
-                int hash = (int)2166136261;
-                hash = (hash * 16777619) ^ obj.x.GetHashCode();
-                hash = (hash * 16777619) ^ obj.y.GetHashCode();
-                return hash;
+                for (int y = StarterSize * -1; y < StarterSize; y++)
+                {
+                    Neighbours = GetAliveNeighbours(x, y);
+                    switch (Neighbours)
+                    {
+                        case 2:
+                            break;
+                        case 3:
+                            Exists = cells.TryGetValue(new CellCoords(x, y), out Dummy);
+                            if (Exists == false)
+                            {
+                                //TODO: add alive Cell if dead and heat+
+                            }
+                            break;
+                        default:
+                            Exists = cells.TryGetValue(new CellCoords(x, y), out Dummy);
+                            if (Exists)
+                            {
+                                //TODO: kill cell if alive and heat-
+                            }
+                            break;
+                    }
+                }
             }
         }
-    }
 
-    class Cell
-    {
-        public Cell()
+        private int GetAliveNeighbours(int CoordX, int CoordY)
         {
+            int Neighbours = 0;
+            for (int x = -1; x < 2; x++)
+            {
+                for (int y = -1; y < 2; y++)
+                {
+                    if (x != 0 || y != 0)
+                    {
+                        Cell dummy;
+                        bool alive;
+                        alive = cells.TryGetValue(new CellCoords(CoordX + x, CoordY + y), out dummy);
+                        if (alive)
+                        {
+                            Neighbours++;
+                        }
+                    }
+                }
+            }
+            return Neighbours;
         }
     }
 }
