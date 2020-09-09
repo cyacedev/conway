@@ -11,9 +11,16 @@ namespace conway
         {
             do
             {
-              Console.WriteLine("Field size? "); 
-              StarterSize = int.Parse(Console.ReadLine());
-            } while (StarterSize < 1 || StarterSize > MaxStarterSize );
+                Console.WriteLine("Field size? ");
+                try
+                {
+                    StarterSize = int.Parse(Console.ReadLine());
+                }
+                catch (FormatException)
+                {
+                    StarterSize = 0;
+                }
+            } while (StarterSize < 1);
             ConwayGame conway = new ConwayGame(StarterSize);
             conway.Run();
         }
