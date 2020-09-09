@@ -1,3 +1,4 @@
+  
 using System;
 using System.Collections.Generic;
 
@@ -8,6 +9,11 @@ namespace conway.lib
         private readonly int StarterSize;
         private Dictionary<CellCoords, Cell> cells;
 
+        private int CheckAfterIterations = 100;
+        private int CheckForIterations = 5;
+
+        private List<Dictionary<CellCoords, Cell>> RepetitionList;
+
         public ConwayGame(int StarterSize)
         {
             this.StarterSize = StarterSize;
@@ -16,13 +22,110 @@ namespace conway.lib
 
         public void Run()
         {
+            RepetitionList = new List<Dictionary<CellCoords, Cell>>();
             GenerateCellsWithProbability(50);
             Console.WriteLine($"Generated Cells: {cells.Count}");
+            Console.WriteLine($"Field Size: {StarterSize * 2} x {StarterSize * 2}");
+            int checkStarted = 0;
+            Boolean iterationRepeated = false;
             for (int i = 0; i < 1000; i++)
             {
                 IterateSimulation();
+            
+                if (i % CheckAfterIterations == 0)
+                {
+                    checkStarted = i;
+                }
+                if (i - checkStarted <= CheckForIterations)
+                {
+                    if (IsCurrentIterationRepetition())
+                    {
+                        iterationRepeated = true;
+                        Console.WriteLine($"Iterations: {i}");
+                        break;
+                    }
+                    AddDictionaryToCheckList();
+                }
+                else if (i - checkStarted == CheckForIterations + 1)
+                {
+                    RepetitionList.Clear();
+                }
+            
             }
+            if(iterationRepeated){
+                //fuck you warning
+            }
+            /*if (iterationRepeated)
+            {
+                foreach (Dictionary<CellCoords, Cell> dictToPrint in RepetitionList)
+                {
+                    Console.WriteLine("previous dictionary printed-----------------------------------------------------------------");
+                    foreach (KeyValuePair<CellCoords, Cell> cell in dictToPrint)
+                    {
+                        Console.WriteLine($"Alive: x({cell.Key.x}), y({cell.Key.y})");
+                    }
+                }
+                Console.WriteLine("final dictionary printed-------------------------------------------------------------------------");
+                foreach (KeyValuePair<CellCoords, Cell> cell in cells)
+                {
+                    Console.WriteLine($"Alive: x({cell.Key.x}), y({cell.Key.y})");
+                }
+            }
+            foreach (KeyValuePair<CellCoords, Cell> cell in cells)
+            {
+                Console.WriteLine($"Alive: x({cell.Key.x}), y({cell.Key.y})");
+            }
+            */
+
             Console.WriteLine($"Alive after 1000 iterations: {cells.Count}");
+        }
+
+        private void AddDictionaryToCheckList()
+        {
+            Dictionary<CellCoords, Cell> copyDictionary = new Dictionary<CellCoords, Cell>(cells.Count, cells.Comparer);
+            foreach (KeyValuePair<CellCoords, Cell> cellPair in cells)
+            {
+                copyDictionary.Add(cellPair.Key, cellPair.Value);
+            }
+
+            this.RepetitionList.Add(copyDictionary);
+        }
+
+        private Boolean IsCurrentIterationRepetition()
+        {
+            foreach (Dictionary<CellCoords, Cell> iterateDictionary in RepetitionList)
+            {
+                Boolean iterateDictionaryRepeated = true;
+                if (iterateDictionary.Count == cells.Count)
+                {
+                    foreach (CellCoords cellCoord in iterateDictionary.Keys)
+                    {
+                        Cell currentAliveCell;
+                        if (!cells.TryGetValue(cellCoord, out currentAliveCell))
+                        {
+                            iterateDictionaryRepeated = false;
+                            break;
+                        }
+                    }
+                    if (iterateDictionaryRepeated)
+                    {
+                        Console.WriteLine("FOUND DICTIONARY-------------------------");
+                        PrintDictionary(iterateDictionary);
+                        Console.WriteLine("CURRENT DICTIONARY-------------------------");
+                        PrintDictionary(cells);
+                        return true;
+                    }
+                }
+
+            }
+            return false;
+        }
+
+        private void PrintDictionary(Dictionary<CellCoords, Cell> dictionary){
+            foreach (KeyValuePair<CellCoords, Cell> cell in dictionary)
+                    {
+                        Console.WriteLine($"Alive: x({cell.Key.x}), y({cell.Key.y})");
+                    }
         }
 
         private void GenerateDefinedAmountOfCells(int AmountOfCells)
@@ -42,12 +145,14 @@ namespace conway.lib
 
         private void GenerateCellsWithProbability(int PromilleMax)
         {
+            Random Random = new System.Random();
             for (int x = StarterSize * -1; x <= StarterSize; x++)
             {
                 for (int y = StarterSize * -1; y <= StarterSize; y++)
                 {
-                    var Random = new System.Random();
-                    if (Random.Next(1001) <= PromilleMax)
+
+                    int random = Random.Next(1001);
+                    if (random <= PromilleMax)
                     {
                         cells.Add(new CellCoords(x, y), new Cell());
                     }
