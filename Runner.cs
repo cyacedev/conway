@@ -11,7 +11,7 @@ namespace conway
         {
             do
             {
-                Console.WriteLine("Field size? ");
+                Console.WriteLine("Field size (in every direction)? ");
                 try
                 {
                     StarterSize = int.Parse(Console.ReadLine());
