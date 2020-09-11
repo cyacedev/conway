@@ -1,2 +1,2 @@
-Fieldsize;lfie probability in promille;number of iterations ;number of simulations
-100;50;1000;100
+FieldSize,ProbabilityForLife,NumberOfIterations,NumberOfSimulations
+100,50,1000,100

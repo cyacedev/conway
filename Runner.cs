@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using conway.lib;
 using System.Collections.Generic;
-
+using CsvHelper;
 namespace conway
 {
     class Runner
@@ -16,41 +17,20 @@ namespace conway
         private static List<List<int>> runList;
         static void Main(string[] args)
         {
+            ConwayGame conwayGame = new ConwayGame(20);
             runList = new List<List<int>>();
             if (args.Length > 0)
             {
                 String fileLocation = args[0];
                 StreamReader reader = new StreamReader(fileLocation);
+                var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
 
-                while (!reader.EndOfStream)
-                {
-                    String line = reader.ReadLine();
-                    String[] values = line.Split(";");
-                    if (int.TryParse(values[0], out int n))
-                    {
-                        List<int> valueList = new List<int>();
-                        foreach (String value in values)
-                        {
-                            int addNumber;
-                            if (int.TryParse(value, out addNumber))
-                            {
-                                valueList.Add(addNumber);
-                            }
-                        }
-                        runList.Add(valueList);
-                    }
+                IEnumerable<InputCsvFile> records = csv.GetRecords<InputCsvFile>();
+                
+                foreach(InputCsvFile csvTest in records){
+                    Console.WriteLine($"input Data: \nsize({csvTest.FieldSize}), prob({csvTest.ProbabilityForLife}), it({csvTest.NumberOfIterations}), sim({csvTest.NumberOfSimulations})");
+                    conwayGame.Run(csvTest.FieldSize, csvTest.ProbabilityForLife, csvTest.NumberOfIterations, csvTest.NumberOfSimulations);
                 }
-            }
-            ConwayGame conwayGame = new ConwayGame(20);
-            foreach (List<int> valueList in runList)
-            {
-                while (valueList.Count < 4)
-                {
-                    valueList.Add(-1);
-                }
-                conwayGame.Run(valueList[_indexOfFieldSize], valueList[_indexOfSpawnChance], valueList[_indexOfIterationsNumber], valueList[_indexOfFieldSizeSimulationsNumber]);
-            }
-
 
             return;
             do
@@ -70,5 +50,13 @@ namespace conway
         }
 
 
+    }
+
+    public class InputCsvFile
+    {
+        public int FieldSize { get; set; }
+        public int ProbabilityForLife{get;set;}
+        public int NumberOfIterations{get;set;}
+        public int NumberOfSimulations{get;set;}
     }
 }

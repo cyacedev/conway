@@ -33,6 +33,7 @@ namespace conway.lib
 
             for (int simulation = 0; simulation < numOfSimulations; simulation++)
             {
+                Console.WriteLine("--------------------------");
                 cells.Clear();
                 RepetitionList.Clear();
                 GenerateCellsWithProbability(probability);
@@ -71,7 +72,7 @@ namespace conway.lib
 
                 Console.WriteLine($"Alive after 1000 iterations: {cells.Count}");
             }
-
+            Console.WriteLine("--------------------------");
         }
 
         private void AddDictionaryToCheckList()
