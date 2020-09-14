@@ -8,12 +8,6 @@ namespace conway
 {
     class Runner
     {
-        private static int _indexOfFieldSize = 0;
-        private static int _indexOfSpawnChance = 1;
-        private static int _indexOfIterationsNumber = 2;
-        private static int _indexOfFieldSizeSimulationsNumber = 3;
-        private static int StarterSize = new Int32();
-        private static int MaxStarterSize = 50;
         private static List<List<int>> runList;
         static void Main(string[] args)
         {
@@ -26,37 +20,23 @@ namespace conway
                 var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
 
                 IEnumerable<InputCsvFile> records = csv.GetRecords<InputCsvFile>();
-                
-                foreach(InputCsvFile csvTest in records){
+
+                foreach (InputCsvFile csvTest in records)
+                {
                     Console.WriteLine($"input Data: \nsize({csvTest.FieldSize}), prob({csvTest.ProbabilityForLife}), it({csvTest.NumberOfIterations}), sim({csvTest.NumberOfSimulations})");
                     conwayGame.Run(csvTest.FieldSize, csvTest.ProbabilityForLife, csvTest.NumberOfIterations, csvTest.NumberOfSimulations);
                 }
 
-            return;
-            do
-            {
-                Console.WriteLine("Field size (in every direction)? ");
-                try
-                {
-                    StarterSize = int.Parse(Console.ReadLine());
-                }
-                catch (FormatException)
-                {
-                    StarterSize = 0;
-                }
-            } while (StarterSize < 1);
-            ConwayGame conway = new ConwayGame(StarterSize);
-            conway.Run(-1, -1, -1, -1);
+                return;
+            }
         }
 
-
-    }
-
-    public class InputCsvFile
-    {
-        public int FieldSize { get; set; }
-        public int ProbabilityForLife{get;set;}
-        public int NumberOfIterations{get;set;}
-        public int NumberOfSimulations{get;set;}
+        public class InputCsvFile
+        {
+            public int FieldSize { get; set; }
+            public int ProbabilityForLife { get; set; }
+            public int NumberOfIterations { get; set; }
+            public int NumberOfSimulations { get; set; }
+        }
     }
 }
