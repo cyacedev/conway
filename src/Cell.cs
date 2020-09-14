@@ -1,8 +1,10 @@
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace conway.lib {
+namespace conway.lib
+{
     class CellCoords
     {
         public int x { get; private set; }
@@ -33,10 +35,17 @@ namespace conway.lib {
         {
             unchecked // Overflow is fine, just wrap
             {
-                int hash = (int)2166136261;
-                hash = (hash * 16777619) ^ obj.x.GetHashCode();
-                hash = (hash * 16777619) ^ obj.y.GetHashCode();
-                return hash;
+                //new hash introduced, see https://stackoverflow.com/a/13871379
+                var x = obj.x;
+                var y = obj.y;
+                Int32 xHash = (Int32)(x >= 0 ? 2 * x : -2 * x - 1);
+                Int32 yHash = (Int32)(y >= 0 ? 2 * y : -2 * y - 1);
+                Int32 Hash = ((xHash >= yHash ? xHash * xHash + xHash + yHash : xHash + yHash * yHash) / 2);
+                return x < 0 && y < 0 || x >= 0 && y >= 0 ? Hash : -Hash - 1;
+                // int hash = (int)2166136261;
+                // hash = (hash * 16777619) ^ obj.x.GetHashCode();
+                // hash = (hash * 16777619) ^ obj.y.GetHashCode();
+                // return hash;
             }
         }
     }
