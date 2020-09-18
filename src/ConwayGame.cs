@@ -173,6 +173,7 @@ namespace Conway
         private void IterateSimulation()
         {
             var newCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
+            var deadCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
             var stat = new IterationStats();
             stat.Iteration = _currentIteration;
             stat.CellCount = _cells.Count;
@@ -194,7 +195,11 @@ namespace Conway
                                 }
                                 break;
                             case 3:
-                                if (exists == false)
+                                if (exists)
+                                {
+                                    newCells.TryAdd(new CellCoords(x, y), currentCell);
+                                }
+                                else
                                 {
                                     bool Added = newCells.TryAdd(new CellCoords(x, y), currentCell);
                                     if (Added)
@@ -202,15 +207,15 @@ namespace Conway
                                         stat.PositiveHeat++;
                                     }
                                 }
-                                else
-                                {
-                                    newCells.TryAdd(new CellCoords(x, y), currentCell);
-                                }
                                 break;
                             default:
                                 if (exists)
                                 {
-                                    stat.NegativeHeat++;
+                                    bool Added = deadCells.TryAdd(new CellCoords(x, y), currentCell);
+                                    if (Added)
+                                    {
+                                        stat.NegativeHeat++;
+                                    }
                                 }
                                 break;
                         }
