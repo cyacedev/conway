@@ -16,7 +16,16 @@ Always use a branch for any changes!
 
 ### CSV-Format
 
-1. FieldSize
-2. ProbabilityForLife
-3. NumberOfIterations
-4. NumberOfSimulations
+```csv
+FieldSize,ProbabilityForLife,NumberOfIterations,NumberOfSimulations,SaveStatistics,NameStatisticFile
+100,50,1000,1000,true,out/test/testfile
+```
+
+| Parameter      | Explanation  |
+| :------------- | :---------- |
+|  FieldSize | The size of the Field in which the starting civilzation will be generated   |
+|  ProbabilityForLife | The Probability in Promille for a cell to be alive at the start |
+|  NumberOfIterations | Amount of Iterations that a simulation should work trough |
+|  NumberOfSimulations | Number of Repetitions with the same parameters but new generated cells |
+|  SaveStatistics | If the programm should save statistics |
+|  NameStatisticFile | Where the program should store the stats and the name of the files |

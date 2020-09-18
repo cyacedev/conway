@@ -2,66 +2,79 @@
 using System;
 using System.Collections.Generic;
 
-namespace conway.lib
+namespace Conway
 {
     public class ConwayGame
     {
         private readonly int _defaultProbability = 50;
         private readonly int _defaultIterations = 50;
-        private int StarterSize;
-        private Dictionary<CellCoords, Cell> cells;
+        private readonly int _defaultStarterSize = 20;
+        private readonly int _defaultNumOfSimulations = 1;
+        private readonly int _checkAfterIterations = 100;
+        private readonly int _checkForIterations = 5;
 
-        private int CheckAfterIterations = 100;
-        private int CheckForIterations = 5;
+        private Dictionary<CellCoords, Cell> _cells;
+        private List<IterationStats> _stats;
+        private int _currentIteration;
+        private List<Dictionary<CellCoords, Cell>> _repetitionList;
 
-        private List<Dictionary<CellCoords, Cell>> RepetitionList;
-
-        public ConwayGame(int StarterSize)
+        public ConwayGame()
         {
-            this.StarterSize = StarterSize;
-            cells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
+            _cells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
+            _stats = new List<IterationStats>();
+            _repetitionList = new List<Dictionary<CellCoords, Cell>>();
         }
 
-        public void Run(int fieldSize, int probability, int numOfIterations, int numOfSimulations)
+        public void Run(InputCsvFile input)
         {
-
-            RepetitionList = new List<Dictionary<CellCoords, Cell>>();
-            if (fieldSize != -1) StarterSize = fieldSize;
+            int fieldSize = input.FieldSize;
+            int probability = input.ProbabilityForLife;
+            int numberOfIterations = input.NumberOfIterations;
+            int numberOfSimulations = input.NumberOfSimulations;
+            bool writeStats = input.SaveStatistics;
+            string statsName = input.NameStatisticFile;
+            if (fieldSize == -1) fieldSize = _defaultStarterSize;
             if (probability == -1) probability = _defaultProbability;
-            if (numOfIterations == -1) numOfIterations = _defaultIterations;
-            if (numOfSimulations == -1) numOfSimulations = 1;
+            if (numberOfIterations == -1) numberOfIterations = _defaultIterations;
+            if (numberOfSimulations == -1) numberOfSimulations = _defaultNumOfSimulations;
 
-            for (int simulation = 0; simulation < numOfSimulations; simulation++)
+            for (int simulation = 0; simulation < numberOfSimulations; simulation++)
             {
                 Console.WriteLine("--------------------------");
-                cells.Clear();
-                RepetitionList.Clear();
-                GenerateCellsWithProbability(probability);
-                Console.WriteLine($"Generated Cells: {cells.Count}");
-                Console.WriteLine($"Field Size: {StarterSize * 2} x {StarterSize * 2}");
+                _cells.Clear();
+                _repetitionList.Clear();
+                _stats.Clear();
+                GenerateCellsWithProbability(probability, fieldSize);
+                Console.WriteLine($"Generated Cells: {_cells.Count}");
+                Console.WriteLine($"Field Size: {fieldSize * 2} x {fieldSize * 2}");
                 int checkStarted = 0;
                 Boolean iterationRepeated = false;
-                for (int i = 0; i < 1000; i++)
+                for (int i = 0; i < numberOfIterations; i++)
                 {
+                    _currentIteration = i + 1;
                     IterateSimulation();
 
-                    if (i % CheckAfterIterations == 0)
+                    if (i % _checkAfterIterations == 0)
                     {
                         checkStarted = i;
                     }
-                    if (i - checkStarted <= CheckForIterations)
+                    if (checkStarted != 0)
                     {
-                        if (IsCurrentIterationRepetition())
+
+                        if (i - checkStarted <= _checkForIterations)
                         {
-                            iterationRepeated = true;
-                            Console.WriteLine($"Iterations: {i}");
-                            break;
+                            if (IsCurrentIterationRepetition())
+                            {
+                                iterationRepeated = true;
+                                Console.WriteLine($"Iterations: {i + 1}");
+                                break;
+                            }
+                            AddDictionaryToCheckList();
                         }
-                        AddDictionaryToCheckList();
-                    }
-                    else if (i - checkStarted == CheckForIterations + 1)
-                    {
-                        RepetitionList.Clear();
+                        else if (i - checkStarted == _checkForIterations + 1)
+                        {
+                            _repetitionList.Clear();
+                        }
                     }
 
                 }
@@ -69,88 +82,89 @@ namespace conway.lib
                 {
                     Console.WriteLine("Field repeated - simulation terminated");
                 }
+                else
+                {
+                    Console.WriteLine($"Alive after 1000 iterations: {_cells.Count}");
+                }
 
-                Console.WriteLine($"Alive after 1000 iterations: {cells.Count}");
+                if (writeStats)
+                {
+                    if (iterationRepeated)
+                    {
+                        IterationStats.WriteStats(_stats, $"./{ statsName }-{ simulation }-terminated.csv");
+                    }
+                    else
+                    {
+                        IterationStats.WriteStats(_stats, $"./{ statsName }-{ simulation }.csv");
+                    }
+                }
             }
             Console.WriteLine("--------------------------");
         }
 
         private void AddDictionaryToCheckList()
         {
-            Dictionary<CellCoords, Cell> copyDictionary = new Dictionary<CellCoords, Cell>(cells.Count, cells.Comparer);
-            foreach (KeyValuePair<CellCoords, Cell> cellPair in cells)
+            Dictionary<CellCoords, Cell> copyDictionary = new Dictionary<CellCoords, Cell>(_cells.Count, _cells.Comparer);
+            foreach (KeyValuePair<CellCoords, Cell> cellPair in _cells)
             {
                 copyDictionary.Add(cellPair.Key, cellPair.Value);
             }
 
-            this.RepetitionList.Add(copyDictionary);
+            _repetitionList.Add(copyDictionary);
         }
 
         private Boolean IsCurrentIterationRepetition()
         {
-            foreach (Dictionary<CellCoords, Cell> iterateDictionary in RepetitionList)
+
+            foreach (Dictionary<CellCoords, Cell> iterateDictionary in _repetitionList)
             {
                 Boolean iterateDictionaryRepeated = true;
-                if (iterateDictionary.Count == cells.Count)
+                if (iterateDictionary.Count == _cells.Count)
                 {
                     foreach (CellCoords cellCoord in iterateDictionary.Keys)
                     {
                         Cell currentAliveCell;
-                        if (!cells.TryGetValue(cellCoord, out currentAliveCell))
+                        if (!_cells.TryGetValue(cellCoord, out currentAliveCell))
                         {
                             iterateDictionaryRepeated = false;
                             break;
                         }
+                        return iterateDictionaryRepeated;
                     }
-                    if (iterateDictionaryRepeated)
-                    {
-                        /*Console.WriteLine("FOUND DICTIONARY-------------------------");
-                        PrintDictionary(iterateDictionary);
-                        Console.WriteLine("CURRENT DICTIONARY-------------------------");
-                        PrintDictionary(cells);*/
-                        return true;
-                    }
+
                 }
 
             }
             return false;
         }
 
-        private void PrintDictionary(Dictionary<CellCoords, Cell> dictionary)
+        private void GenerateDefinedAmountOfCells(int amountOfCells, int fieldSize)
         {
-            foreach (KeyValuePair<CellCoords, Cell> cell in dictionary)
-            {
-                Console.WriteLine($"Alive: x({cell.Key.x}), y({cell.Key.y})");
-            }
-        }
-
-        private void GenerateDefinedAmountOfCells(int AmountOfCells)
-        {
-            for (int i = 0; i < AmountOfCells; i++)
+            for (int i = 0; i < amountOfCells; i++)
             {
                 bool added = false;
                 do
                 {
                     var Random = new System.Random();
-                    var x = Random.Next(StarterSize * -1, StarterSize + 1);
-                    var y = Random.Next(StarterSize * -1, StarterSize + 1);
-                    added = cells.TryAdd(new CellCoords(x, y), new Cell());
+                    var x = Random.Next(fieldSize * -1, fieldSize + 1);
+                    var y = Random.Next(fieldSize * -1, fieldSize + 1);
+                    added = _cells.TryAdd(new CellCoords(x, y), new Cell());
                 } while (added == false);
             }
         }
 
-        private void GenerateCellsWithProbability(int PromilleMax)
+        private void GenerateCellsWithProbability(int promilleMax, int fieldSize)
         {
             Random Random = new System.Random();
-            for (int x = StarterSize * -1; x <= StarterSize; x++)
+            for (int x = fieldSize * -1; x <= fieldSize; x++)
             {
-                for (int y = StarterSize * -1; y <= StarterSize; y++)
+                for (int y = fieldSize * -1; y <= fieldSize; y++)
                 {
 
                     int random = Random.Next(1001);
-                    if (random <= PromilleMax)
+                    if (random <= promilleMax)
                     {
-                        cells.Add(new CellCoords(x, y), new Cell());
+                        _cells.Add(new CellCoords(x, y), new Cell());
                     }
                 }
             }
@@ -159,54 +173,57 @@ namespace conway.lib
         private void IterateSimulation()
         {
             var newCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
-            foreach (System.Collections.Generic.KeyValuePair<conway.lib.CellCoords, conway.lib.Cell> cell in cells)
+            var stat = new IterationStats();
+            stat.Iteration = _currentIteration;
+            stat.CellCount = _cells.Count;
+            foreach (System.Collections.Generic.KeyValuePair<CellCoords, Cell> cell in _cells)
             {
                 for (int y = cell.Key.y - 1; y <= (cell.Key.y + 1); y++)
                 {
                     for (int x = cell.Key.x - 1; x <= (cell.Key.x + 1); x++)
                     {
-                        int Neighbours = GetAliveNeighbours(x, y);
-                        Cell CurrentCell;
-                        bool Exists = cells.TryGetValue(new CellCoords(x, y), out CurrentCell);
-                        switch (Neighbours)
+                        int neighbours = GetAliveNeighbours(x, y);
+                        Cell currentCell;
+                        bool exists = _cells.TryGetValue(new CellCoords(x, y), out currentCell);
+                        switch (neighbours)
                         {
                             case 2:
-                                if (Exists)
+                                if (exists)
                                 {
-                                    newCells.TryAdd(new CellCoords(x, y), CurrentCell);
+                                    newCells.TryAdd(new CellCoords(x, y), currentCell);
                                 }
                                 break;
                             case 3:
-                                if (Exists == false)
+                                if (exists == false)
                                 {
-                                    bool Added = newCells.TryAdd(new CellCoords(x, y), CurrentCell);
+                                    bool Added = newCells.TryAdd(new CellCoords(x, y), currentCell);
                                     if (Added)
                                     {
-                                        //TODO: increase heat+
+                                        stat.PositiveHeat++;
                                     }
                                 }
                                 else
                                 {
-                                    newCells.TryAdd(new CellCoords(x, y), CurrentCell);
+                                    newCells.TryAdd(new CellCoords(x, y), currentCell);
                                 }
                                 break;
                             default:
-                                if (Exists)
+                                if (exists)
                                 {
-                                    //TODO: decrease heat-
+                                    stat.NegativeHeat++;
                                 }
                                 break;
                         }
                     }
                 }
             }
-
-            cells = newCells;
+            _stats.Add(stat);
+            _cells = newCells;
         }
 
-        private int GetAliveNeighbours(int CoordX, int CoordY)
+        private int GetAliveNeighbours(int coordX, int coordY)
         {
-            int Neighbours = 0;
+            int neighbours = 0;
             for (int x = -1; x <= 1; x++)
             {
                 for (int y = -1; y <= 1; y++)
@@ -215,15 +232,15 @@ namespace conway.lib
                     {
                         Cell dummy;
                         bool alive;
-                        alive = cells.TryGetValue(new CellCoords(CoordX + x, CoordY + y), out dummy);
+                        alive = _cells.TryGetValue(new CellCoords(coordX + x, coordY + y), out dummy);
                         if (alive)
                         {
-                            Neighbours++;
+                            neighbours++;
                         }
                     }
                 }
             }
-            return Neighbours;
+            return neighbours;
         }
     }
 }
