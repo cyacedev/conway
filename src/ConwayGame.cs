@@ -156,9 +156,9 @@ namespace Conway
         private void GenerateCellsWithProbability(int promilleMax, int fieldSize)
         {
             Random Random = new System.Random();
-            for (int x = fieldSize * -1; x <= fieldSize; x++)
+            for (int x = 0; x <= fieldSize; x++)
             {
-                for (int y = fieldSize * -1; y <= fieldSize; y++)
+                for (int y = 0; y <= fieldSize; y++)
                 {
 
                     int random = Random.Next(1001);
