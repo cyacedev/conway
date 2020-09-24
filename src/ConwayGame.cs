@@ -46,7 +46,7 @@ namespace Conway
                 _stats.Clear();
                 GenerateCellsWithProbability(probability, fieldSize);
                 Console.WriteLine($"Generated Cells: {_cells.Count}");
-                Console.WriteLine($"Field Size: {fieldSize * 2} x {fieldSize * 2}");
+                Console.WriteLine($"Field Size: {fieldSize + 1} x {fieldSize + 1}");
                 int checkStarted = 0;
                 Boolean iterationRepeated = false;
                 for (int i = 0; i < numberOfIterations; i++)
@@ -118,7 +118,7 @@ namespace Conway
 
             foreach (Dictionary<CellCoords, Cell> iterateDictionary in _repetitionList)
             {
-                Boolean iterateDictionaryRepeated = true;
+                bool iterateDictionaryRepeated = true;
                 if (iterateDictionary.Count == _cells.Count)
                 {
                     foreach (CellCoords cellCoord in iterateDictionary.Keys)
@@ -155,10 +155,21 @@ namespace Conway
 
         private void GenerateCellsWithProbability(int promilleMax, int fieldSize)
         {
+            //Field size 1 generates a 2 * 2 field
+            int negativStartPoint = 0;
+            int positiveEndPoint = 0;
+            if(fieldSize % 2 == 0){
+                negativStartPoint = fieldSize/2*-1;
+                positiveEndPoint = fieldSize/2;
+            }
+            else{
+                negativStartPoint = fieldSize/2*-1;
+                positiveEndPoint = fieldSize/2 + 1;
+            }
             Random Random = new System.Random();
-            for (int x = fieldSize * -1; x <= fieldSize; x++)
+            for (int x = negativStartPoint; x <= positiveEndPoint; x++)
             {
-                for (int y = fieldSize * -1; y <= fieldSize; y++)
+                for (int y = negativStartPoint; y <= positiveEndPoint; y++)
                 {
 
                     int random = Random.Next(1001);
@@ -172,17 +183,24 @@ namespace Conway
 
         private void IterateSimulation()
         {
+            Dictionary<CellCoords, Cell> checkedCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
             var newCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
             var deadCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
             var stat = new IterationStats();
             stat.Iteration = _currentIteration;
             stat.CellCount = _cells.Count;
+            stat.PositiveHeat = 0;
+            stat.NegativeHeat = 0;
             foreach (System.Collections.Generic.KeyValuePair<CellCoords, Cell> cell in _cells)
             {
                 for (int y = cell.Key.y - 1; y <= (cell.Key.y + 1); y++)
                 {
                     for (int x = cell.Key.x - 1; x <= (cell.Key.x + 1); x++)
                     {
+                        if(!checkedCells.TryAdd(new CellCoords(x,y), cell.Value)){
+                            continue;
+                        }
+
                         int neighbours = GetAliveNeighbours(x, y);
                         Cell currentCell;
                         bool exists = _cells.TryGetValue(new CellCoords(x, y), out currentCell);
@@ -222,6 +240,8 @@ namespace Conway
                     }
                 }
             }
+            checkedCells.Clear();
+            checkedCells = null;
             _stats.Add(stat);
             _cells = newCells;
         }
