@@ -25,7 +25,26 @@ namespace Conway
             _repetitionList = new List<Dictionary<CellCoords, Cell>>();
         }
 
-        public void Run(InputCsvFile input)
+        public void RunPredefinedGame(IEnumerable<PredefinedPosition> livingCells, InputCsvFile input)
+        {
+            _cells.Clear();
+            _stats.Clear();
+            _repetitionList.Clear();
+            setPredefinedCells(livingCells);
+            Run(input, true);
+
+        }
+
+        private void setPredefinedCells(IEnumerable<PredefinedPosition> livingCells)
+        {
+            foreach (PredefinedPosition newCell in livingCells)
+            {
+                _cells.TryAdd(new CellCoords(newCell.x, newCell.y), new Cell());
+            }
+        }
+
+
+        public void Run(InputCsvFile input, bool predefinedPosition)
         {
             int fieldSize = input.FieldSize;
             int probability = input.ProbabilityForLife;
@@ -33,20 +52,31 @@ namespace Conway
             int numberOfSimulations = input.NumberOfSimulations;
             bool writeStats = input.SaveStatistics;
             string statsName = input.NameStatisticFile;
+            string endStateName = input.NameEndStateFile;
             if (fieldSize == -1) fieldSize = _defaultStarterSize;
             if (probability == -1) probability = _defaultProbability;
             if (numberOfIterations == -1) numberOfIterations = _defaultIterations;
             if (numberOfSimulations == -1) numberOfSimulations = _defaultNumOfSimulations;
-
+            if (predefinedPosition) numberOfSimulations = 1;
             for (int simulation = 0; simulation < numberOfSimulations; simulation++)
             {
                 Console.WriteLine("--------------------------");
-                _cells.Clear();
+                if (!predefinedPosition)
+                {
+                    _cells.Clear();
+                }
                 _repetitionList.Clear();
                 _stats.Clear();
-                GenerateCellsWithProbability(probability, fieldSize);
-                Console.WriteLine($"Generated Cells: {_cells.Count}");
-                Console.WriteLine($"Field Size: {fieldSize + 1} x {fieldSize + 1}");
+                if (!predefinedPosition)
+                {
+                    GenerateCellsWithProbability(probability, fieldSize);
+                    Console.WriteLine($"Generated Cells: {_cells.Count}");
+                    Console.WriteLine($"Field Size: {fieldSize + 1} x {fieldSize + 1}");
+                }
+                else
+                {
+                    Console.WriteLine($"Predefined Generated Cells: {_cells.Count}");
+                }
                 int checkStarted = 0;
                 Boolean iterationRepeated = false;
                 for (int i = 0; i < numberOfIterations; i++)
@@ -89,6 +119,10 @@ namespace Conway
 
                 if (writeStats)
                 {
+
+                    IterationStats endStats = new IterationStats();
+                    endStats.CellCount = _cells.Count;
+                    _stats.Add(endStats);
                     if (iterationRepeated)
                     {
                         IterationStats.WriteStats(_stats, $"./{ statsName }-{ simulation }-terminated.csv");
@@ -97,6 +131,10 @@ namespace Conway
                     {
                         IterationStats.WriteStats(_stats, $"./{ statsName }-{ simulation }.csv");
                     }
+                }
+                if (input.SaveEndState)
+                {
+                    IterationEndPosition.WriteEndPosition(_cells, $"./{ endStateName }-{ simulation }.csv");
                 }
             }
             Console.WriteLine("--------------------------");
@@ -158,13 +196,15 @@ namespace Conway
             //Field size 1 generates a 2 * 2 field
             int negativStartPoint = 0;
             int positiveEndPoint = 0;
-            if(fieldSize % 2 == 0){
-                negativStartPoint = fieldSize/2*-1;
-                positiveEndPoint = fieldSize/2;
+            if (fieldSize % 2 == 0)
+            {
+                negativStartPoint = fieldSize / 2 * -1;
+                positiveEndPoint = fieldSize / 2;
             }
-            else{
-                negativStartPoint = fieldSize/2*-1;
-                positiveEndPoint = fieldSize/2 + 1;
+            else
+            {
+                negativStartPoint = fieldSize / 2 * -1;
+                positiveEndPoint = fieldSize / 2 + 1;
             }
             Random Random = new System.Random();
             for (int x = negativStartPoint; x <= positiveEndPoint; x++)
@@ -199,14 +239,16 @@ namespace Conway
                 {
                     for (int x = cell.Key.x - 1; x <= (cell.Key.x + 1); x++)
                     {
-                        if(!checkedCells.TryAdd(new CellCoords(x,y), cell.Value)){
+                        if (!checkedCells.TryAdd(new CellCoords(x, y), cell.Value))
+                        {
                             continue;
                         }
                         int neighbours = GetAliveNeighbours(x, y);
                         Cell currentCell;
                         bool exists = _cells.TryGetValue(new CellCoords(x, y), out currentCell);
-                        if(exists){
-                            iterationDensity.AddCellCoordToCheck(new CellCoords(x,y));
+                        if (exists)
+                        {
+                            iterationDensity.AddCellCoordToCheck(new CellCoords(x, y));
                             averageNeighbours.AddCellNeighbourEntry(neighbours);
                         }
 
@@ -276,6 +318,23 @@ namespace Conway
                 }
             }
             return neighbours;
+        }
+    }
+
+    public class PredefinedPosition
+    {
+        public int x { get; set; }
+        public int y { get; set; }
+
+        public PredefinedPosition(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        public PredefinedPosition()
+        {
+
         }
     }
 }

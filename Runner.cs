@@ -16,17 +16,35 @@ namespace Conway
             runList = new List<List<int>>();
             if (args.Length > 0)
             {
-                String fileLocation = args[0];
-                StreamReader reader = new StreamReader(fileLocation);
-                var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+                String conditionFileLocation = args[0];
+                StreamReader reader = new StreamReader(conditionFileLocation);
+                var csvConditions = new CsvReader(reader, CultureInfo.InvariantCulture);
 
-                IEnumerable<InputCsvFile> records = csv.GetRecords<InputCsvFile>();
-
-                foreach (InputCsvFile record in records)
+                if (args.Length > 1)
                 {
-                    Console.WriteLine($"input Data: \nsize({record.FieldSize}), prob({record.ProbabilityForLife}), it({record.NumberOfIterations}), sim({record.NumberOfSimulations})");
-                    conwayGame.Run(record);
+                    IEnumerable<InputCsvFile> conditionRecords = csvConditions.GetRecords<InputCsvFile>();
+                    InputCsvFile firstEntry = new InputCsvFile();
+                    using (IEnumerator<InputCsvFile> enumer = conditionRecords.GetEnumerator())
+                    {
+                        if (enumer.MoveNext()) firstEntry = enumer.Current;
+                    }
+                    string predefinedInputLocation = args[1];
+                    StreamReader predefinedInputReader = new StreamReader(predefinedInputLocation);
+                    var csvPredefinedPositions = new CsvReader(predefinedInputReader, CultureInfo.InvariantCulture);
+                    IEnumerable<PredefinedPosition> predefinedCellRecords = csvPredefinedPositions.GetRecords<PredefinedPosition>();
+                    conwayGame.RunPredefinedGame(predefinedCellRecords, firstEntry);
                 }
+                else
+                {
+                    IEnumerable<InputCsvFile> records = csvConditions.GetRecords<InputCsvFile>();
+
+                    foreach (InputCsvFile record in records)
+                    {
+                        Console.WriteLine($"input Data: \nsize({record.FieldSize}), prob({record.ProbabilityForLife}), it({record.NumberOfIterations}), sim({record.NumberOfSimulations})");
+                        conwayGame.Run(record, false);
+                    }
+                }
+
 
                 return;
             }
@@ -45,7 +63,9 @@ namespace Conway
         [BooleanTrueValues("true")]
         [BooleanFalseValues("false")]
         public bool SaveStatistics { get; set; }
+        public bool SaveEndState { get; set; }
 
         public string NameStatisticFile { get; set; }
+        public string NameEndStateFile { get; set; }
     }
 }
