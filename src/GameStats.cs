@@ -21,4 +21,18 @@ namespace Conway
             }
         }
     }
+
+    public class IterationEndPosition{
+        public static void WriteEndPosition(Dictionary<CellCoords, Cell> writeDictionary, string path){
+            List<PredefinedPosition> endPositions = new List<PredefinedPosition>();
+            foreach(KeyValuePair<CellCoords, Cell> cellEntry in writeDictionary){
+                endPositions.Add(new PredefinedPosition(cellEntry.Key.x, cellEntry.Key.y));
+            }
+            using (var writer = new System.IO.StreamWriter(path))
+            using (var csv = new CsvHelper.CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture))
+            {
+                csv.WriteRecords(endPositions);
+            }
+        }
+    }
 }

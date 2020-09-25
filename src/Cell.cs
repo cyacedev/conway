@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Conway
 {
-    class CellCoords
+    public class CellCoords
     {
         public int x { get; private set; }
         public int y { get; private set; }
@@ -99,7 +99,7 @@ namespace Conway
         }
     }
 
-    class Cell
+    public class Cell
     {
         public Cell()
         {
