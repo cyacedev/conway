@@ -145,7 +145,7 @@ namespace Conway
             Dictionary<CellCoords, Cell> copyDictionary = new Dictionary<CellCoords, Cell>(_cells.Count, _cells.Comparer);
             foreach (KeyValuePair<CellCoords, Cell> cellPair in _cells)
             {
-                copyDictionary.Add(cellPair.Key, cellPair.Value);
+                copyDictionary.Add(new CellCoords(cellPair.Key.x, cellPair.Key.y), new Cell());
             }
 
             _repetitionList.Add(copyDictionary);
@@ -161,12 +161,13 @@ namespace Conway
                 {
                     foreach (CellCoords cellCoord in iterateDictionary.Keys)
                     {
-                        Cell currentAliveCell;
-                        if (!_cells.TryGetValue(cellCoord, out currentAliveCell))
+                        if (!_cells.ContainsKey(cellCoord))
                         {
                             iterateDictionaryRepeated = false;
                             break;
                         }
+                    }
+                    if(iterateDictionaryRepeated){
                         return iterateDictionaryRepeated;
                     }
 
