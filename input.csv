@@ -1,2 +1,2 @@
 FieldSize,ProbabilityForLife,NumberOfIterations,NumberOfSimulations,SaveStatistics,NameStatisticFile
-99,50,1000,10,true,out/outputfile
+99,1000,1000,10,true,out/outputfile
