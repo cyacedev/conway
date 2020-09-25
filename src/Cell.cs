@@ -39,6 +39,37 @@ namespace Conway
 
     }
 
+    class CellDensity{
+        public int fromX {get; set;}
+        public int fromY {get; set;}
+        public int toX {get; set;}
+        public int toY{get; set;}
+        public int cellCount{get; set;}
+        public float cellDensity {get; set;}
+        public CellDensity(int cellCount){
+            fromX = int.MaxValue;
+            fromY = int.MaxValue;
+            toX = int.MinValue;
+            toY = int.MinValue;
+            this.cellCount = cellCount;
+        }
+
+        public void AddCellCoordToCheck(CellCoords checkCoords){
+            if(checkCoords.x < fromX) fromX = checkCoords.x;
+            if(checkCoords.y < fromY) fromY = checkCoords.y;
+            if(checkCoords.x > toX) toX = checkCoords.y;
+            if(checkCoords.y > toY) toY = checkCoords.y;
+        }
+
+        public void CalculateDensity(){
+            int length = toX - fromX + 1;
+            int height = toY - fromY + 1;
+            int numberOfFields = length * height;
+            this.cellDensity =  this.cellCount / (float)numberOfFields;
+        }
+
+    }
+
     class CellCoordsComparer : IEqualityComparer<CellCoords>
     {
         public bool Equals([AllowNull] CellCoords first, [AllowNull] CellCoords second)

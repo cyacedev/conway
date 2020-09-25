@@ -9,6 +9,7 @@ namespace Conway
         public int NegativeHeat { get; set; }
         public int CellCount { get; set; }
         public float IterationAverageNeighbours { get; set; }
+        public float IterationDensity { get; set; }
 
         public static void WriteStats(List<IterationStats> stats, string path)
         {
