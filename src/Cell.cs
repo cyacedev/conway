@@ -17,6 +17,28 @@ namespace Conway
         }
     }
 
+    class CellAverageNeighbours{
+        public List<int> _neighbours { get; private set;}
+        public float averageNeighbourNumber { get; private set; }
+
+        public CellAverageNeighbours(){
+            this._neighbours = new List<int>();
+        }
+
+        public void AddCellNeighbourEntry(int neighbours){
+            this._neighbours.Add(neighbours);
+        }
+
+        public void CalculateAverage(){
+            int allNeighbours = 0;
+            foreach(int numOfNeighbour in _neighbours){
+                allNeighbours += numOfNeighbour;
+            }
+            this.averageNeighbourNumber = allNeighbours / (float)_neighbours.Count;
+        }
+
+    }
+
     class CellCoordsComparer : IEqualityComparer<CellCoords>
     {
         public bool Equals([AllowNull] CellCoords first, [AllowNull] CellCoords second)

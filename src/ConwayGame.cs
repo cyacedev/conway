@@ -184,6 +184,7 @@ namespace Conway
         private void IterateSimulation()
         {
             Dictionary<CellCoords, Cell> checkedCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
+            CellAverageNeighbours averageNeighbours = new CellAverageNeighbours();
             var newCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
             var deadCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
             var stat = new IterationStats();
@@ -200,10 +201,13 @@ namespace Conway
                         if(!checkedCells.TryAdd(new CellCoords(x,y), cell.Value)){
                             continue;
                         }
-
                         int neighbours = GetAliveNeighbours(x, y);
                         Cell currentCell;
                         bool exists = _cells.TryGetValue(new CellCoords(x, y), out currentCell);
+                        if(exists){
+                            averageNeighbours.AddCellNeighbourEntry(neighbours);
+                        }
+                        
                         switch (neighbours)
                         {
                             case 2:
@@ -240,6 +244,8 @@ namespace Conway
                     }
                 }
             }
+            averageNeighbours.CalculateAverage();
+            stat.IterationAverageNeighbours = averageNeighbours.averageNeighbourNumber;
             checkedCells.Clear();
             checkedCells = null;
             _stats.Add(stat);
