@@ -17,21 +17,26 @@ namespace Conway
         }
     }
 
-    class CellAverageNeighbours{
-        public List<int> _neighbours { get; private set;}
+    class CellAverageNeighbours
+    {
+        public List<int> _neighbours { get; private set; }
         public float averageNeighbourNumber { get; private set; }
 
-        public CellAverageNeighbours(){
+        public CellAverageNeighbours()
+        {
             this._neighbours = new List<int>();
         }
 
-        public void AddCellNeighbourEntry(int neighbours){
+        public void AddCellNeighbourEntry(int neighbours)
+        {
             this._neighbours.Add(neighbours);
         }
 
-        public void CalculateAverage(){
+        public void CalculateAverage()
+        {
             int allNeighbours = 0;
-            foreach(int numOfNeighbour in _neighbours){
+            foreach (int numOfNeighbour in _neighbours)
+            {
                 allNeighbours += numOfNeighbour;
             }
             this.averageNeighbourNumber = allNeighbours / (float)_neighbours.Count;
@@ -39,33 +44,53 @@ namespace Conway
 
     }
 
-    class CellDensity{
-        public int fromX {get; set;}
-        public int fromY {get; set;}
-        public int toX {get; set;}
-        public int toY{get; set;}
-        public int cellCount{get; set;}
-        public float cellDensity {get; set;}
-        public CellDensity(int cellCount){
-            fromX = int.MaxValue;
-            fromY = int.MaxValue;
-            toX = int.MinValue;
-            toY = int.MinValue;
+    class CellDensity
+    {
+        public CellCoords fromX { get; set; }
+        public CellCoords fromY { get; set; }
+        public CellCoords toX { get; set; }
+        public CellCoords toY { get; set; }
+        public int cellCount { get; set; }
+        public float cellDensity { get; set; }
+        public CellDensity(int cellCount)
+        {
+            fromX = new CellCoords(int.MaxValue, 0);
+            fromY = new CellCoords(0, int.MaxValue);
+            toX = new CellCoords(int.MinValue, 0);
+            toY = new CellCoords(int.MinValue, 0);
             this.cellCount = cellCount;
         }
 
-        public void AddCellCoordToCheck(CellCoords checkCoords){
-            if(checkCoords.x < fromX) fromX = checkCoords.x;
-            if(checkCoords.y < fromY) fromY = checkCoords.y;
-            if(checkCoords.x > toX) toX = checkCoords.y;
-            if(checkCoords.y > toY) toY = checkCoords.y;
+        public void AddCellCoordToCheck(CellCoords checkCoords)
+        {
+            if (checkCoords.x < fromX.x)
+            {
+                fromX = checkCoords;
+            }
+
+            if (checkCoords.y < fromY.y)
+            {
+                fromY = checkCoords;
+            }
+            if (checkCoords.x > toX.x)
+            {
+                toX = checkCoords;
+            }
+            if (checkCoords.y > toY.y)
+            {
+                toY = checkCoords;
+            }
         }
 
-        public void CalculateDensity(){
-            int length = toX - fromX + 1;
-            int height = toY - fromY + 1;
+        public void CalculateDensity()
+        {
+            int length = toX.x - fromX.x + 1;
+            int height = toY.y - fromY.y + 1;
             int numberOfFields = length * height;
-            this.cellDensity =  this.cellCount / (float)numberOfFields;
+            if(numberOfFields == 0){
+                Console.WriteLine($"length * height = 0: fromx({fromX.x}) tox({toX.x}), fromy({fromY.y}) toy({toY.y})");
+            }
+            this.cellDensity = this.cellCount / (float)numberOfFields;
         }
 
     }

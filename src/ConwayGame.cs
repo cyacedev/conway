@@ -78,11 +78,17 @@ namespace Conway
                     Console.WriteLine($"Predefined Generated Cells: {_cells.Count}");
                 }
                 int checkStarted = 0;
-                Boolean iterationRepeated = false;
+                bool iterationRepeated = false;
+                bool iterationDead = false;
                 for (int i = 0; i < numberOfIterations; i++)
                 {
                     _currentIteration = i + 1;
                     IterateSimulation();
+
+                    if(_cells.Count == 0){
+                        iterationDead = true;
+                        break;
+                    }
 
                     if (i % _checkAfterIterations == 0)
                     {
@@ -111,6 +117,10 @@ namespace Conway
                 if (iterationRepeated)
                 {
                     Console.WriteLine("Field repeated - simulation terminated");
+                }
+                else if(iterationDead)
+                {
+                    Console.WriteLine("Field dead - simulation terminated");
                 }
                 else
                 {
