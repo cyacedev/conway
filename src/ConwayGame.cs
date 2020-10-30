@@ -204,6 +204,7 @@ namespace Conway
 
         private void GenerateCellsWithProbability(int promilleMax, int fieldSize)
         {
+            fieldSize--;
             //Field size 1 generates a 2 * 2 field
             int negativStartPoint = 0;
             int positiveEndPoint = 0;
