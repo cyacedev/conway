@@ -71,7 +71,7 @@ namespace Conway
                 {
                     GenerateCellsWithProbability(probability, fieldSize);
                     Console.WriteLine($"Generated Cells: {_cells.Count}");
-                    Console.WriteLine($"Field Size: {fieldSize + 1} x {fieldSize + 1}");
+                    Console.WriteLine($"Field Size: {fieldSize} x {fieldSize}");
                 }
                 else
                 {
@@ -204,8 +204,9 @@ namespace Conway
 
         private void GenerateCellsWithProbability(int promilleMax, int fieldSize)
         {
+            
             fieldSize--;
-            //Field size 1 generates a 2 * 2 field
+            //Fieldsize 1 generates 1 x 1 field (because 0x0 is also generated)
             int negativStartPoint = 0;
             int positiveEndPoint = 0;
             if (fieldSize % 2 == 0)
