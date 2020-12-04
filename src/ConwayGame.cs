@@ -90,7 +90,7 @@ namespace Conway
                 {
                     _currentIteration = i + 1;
                     IterateSimulation();
-                    Console.WriteLine($"Current iteration: {i}");
+                    //Console.WriteLine($"Current iteration: {i}");
                     if(_cells.Count == 0){
                         iterationDead = true;
                         break;
@@ -271,6 +271,11 @@ namespace Conway
             var deadCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
             var stat = new IterationStats();
             stat.Iteration = _currentIteration;
+            foreach(KeyValuePair<CellCoords, Cell> cell in _cells){
+                iterationDensity.AddCellCoordToCheck(cell.Key);
+            }
+            iterationDensity.CalculateDensity();
+            stat.IterationDensity = iterationDensity.cellDensity;
             stat.CellCount = _cells.Count;
             stat.PositiveHeat = 0;
             stat.NegativeHeat = 0;
@@ -313,21 +318,18 @@ namespace Conway
                 }
             }
 
+            int addedCells = 0;
+            int removedCells = 0;
             foreach(ChangedCellCoords changedCoords in this._newChangedCoords){
                 if(changedCoords.newLife){
                     _cells.Add(changedCoords.cellCoords, new Cell());
+                    addedCells++;
                 }else{
                     _cells.Remove(changedCoords.cellCoords);
+                    removedCells++;
                 }
             }
 
-            foreach(KeyValuePair<CellCoords, Cell> cell in _cells){
-                iterationDensity.AddCellCoordToCheck(cell.Key);
-            }
-
-            iterationDensity.CalculateDensity();
-            //averageNeighbours.CalculateAverage();
-            stat.IterationDensity = iterationDensity.cellDensity;
             stat.IterationAverageNeighbours = averageNeighbours.averageNeighbourNumber;
             checkedCells.Clear();
             checkedCells = null;

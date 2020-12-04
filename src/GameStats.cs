@@ -75,26 +75,45 @@ namespace Conway
         {
             if (File.Exists(readPath))
             {
-                List<IterationStats> averageStats = new List<IterationStats>();
+                List<AverageIterationStats> averageStats = new List<AverageIterationStats>();
                 StreamReader reader = new StreamReader(readPath);
                 var previousStatsReader = new CsvReader(reader, CultureInfo.InvariantCulture);
                 IEnumerable<IterationStats> statsRecords = previousStatsReader.GetRecords<IterationStats>();
                 foreach (IterationStats calculatedStat in statsRecords)
                 {
-                    IterationStats averageStat = new IterationStats();
+                    AverageIterationStats averageStat = new AverageIterationStats();
                     averageStat.Iteration = calculatedStat.Iteration;
-                    averageStat.PositiveHeat = calculatedStat.PositiveHeat / simulationNumber;
-                    averageStat.NegativeHeat = calculatedStat.NegativeHeat / simulationNumber;
-                    averageStat.CellCount = calculatedStat.CellCount / simulationNumber;
-                    averageStat.IterationAverageNeighbours = calculatedStat.IterationAverageNeighbours / simulationNumber;
-                    averageStat.IterationDensity = calculatedStat.IterationDensity / simulationNumber;
+                    averageStat.PositiveHeat = calculatedStat.PositiveHeat / (float)simulationNumber;
+                    averageStat.NegativeHeat = calculatedStat.NegativeHeat / (float)simulationNumber;
+                    averageStat.CellCount = calculatedStat.CellCount / (float)simulationNumber;
+                    averageStat.IterationAverageNeighbours = calculatedStat.IterationAverageNeighbours / (float)simulationNumber;
+                    averageStat.IterationDensity = calculatedStat.IterationDensity / (float)simulationNumber;
 
                     averageStats.Add(averageStat);
                 }
                 reader.Close();
-                WriteStats(averageStats, writePath);
+                AverageIterationStats.WriteStats(averageStats, writePath);
             }
             File.Delete(readPath);
+        }
+    }
+
+public class AverageIterationStats
+    {
+        public int Iteration { get; set; } = 0;
+        public float PositiveHeat { get; set; } = 0;
+        public float NegativeHeat { get; set; } = 0;
+        public float CellCount { get; set; } = 0;
+        public float IterationAverageNeighbours { get; set; } = 0;
+        public float IterationDensity { get; set; } = 0;
+        public static void WriteStats(List<AverageIterationStats> stats, string path)
+        {
+
+            using (var writer = new System.IO.StreamWriter(path))
+            using (var csv = new CsvHelper.CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture))
+            {
+                csv.WriteRecords(stats);
+            }
         }
     }
 
