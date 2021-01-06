@@ -57,7 +57,7 @@ namespace Conway
             if (probability == -1) probability = _defaultProbability;
             if (numberOfIterations == -1) numberOfIterations = _defaultIterations;
             if (numberOfSimulations == -1) numberOfSimulations = _defaultNumOfSimulations;
-            if (predefinedPosition) numberOfSimulations = 1;
+            if (predefinedPosition) numberOfSimulations = 1; //only the predefined game has to be run
             for (int simulation = 0; simulation < numberOfSimulations; simulation++)
             {
                 Console.WriteLine("--------------------------");
@@ -90,29 +90,31 @@ namespace Conway
                         break;
                     }
 
-                    if (i % _checkAfterIterations == 0)
-                    {
-                        checkStarted = i;
-                    }
-                    if (checkStarted != 0)
-                    {
-
-                        if (i - checkStarted <= _checkForIterations)
+                    //For average stats, repetition is not enabled
+                    if(!input.AverageStats){
+                        if (i % _checkAfterIterations == 0)
                         {
-                            if (IsCurrentIterationRepetition())
+                            checkStarted = i;
+                        }
+                        if (checkStarted != 0)
+                        {
+
+                            if (i - checkStarted <= _checkForIterations)
                             {
-                                iterationRepeated = true;
-                                Console.WriteLine($"Iterations: {i + 1}");
-                                break;
+                                if (IsCurrentIterationRepetition())
+                                {
+                                    iterationRepeated = true;
+                                    Console.WriteLine($"Iterations: {i + 1}");
+                                    break;
+                                }
+                                AddDictionaryToCheckList();
                             }
-                            AddDictionaryToCheckList();
-                        }
-                        else if (i - checkStarted == _checkForIterations + 1)
-                        {
-                            _repetitionList.Clear();
+                            else if (i - checkStarted == _checkForIterations + 1)
+                            {
+                                _repetitionList.Clear();
+                            }
                         }
                     }
-
                 }
                 if (iterationRepeated)
                 {
@@ -140,12 +142,22 @@ namespace Conway
                     else
                     {
                         IterationStats.WriteStats(_stats, $"./{ statsName }-{ simulation }.csv");
+                        
+                        if(input.AverageStats){
+                            IterationStats.AddAverageStats(_stats, $"./{ statsName }-cache.csv");    
+                        }
+                        
                     }
+
                 }
                 if (input.SaveEndState)
                 {
                     IterationEndPosition.WriteEndPosition(_cells, $"./{ endStateName }-{ simulation }.csv");
                 }
+                
+            }
+            if(input.AverageStats){
+                IterationStats.CalculateAndWriteAverageStats(input.NumberOfSimulations, $"./{ statsName }-cache.csv", $"./{ statsName }-average.csv");
             }
             Console.WriteLine("--------------------------");
         }

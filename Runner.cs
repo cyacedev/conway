@@ -64,6 +64,7 @@ namespace Conway
         [BooleanFalseValues("false")]
         public bool SaveStatistics { get; set; }
         public bool SaveEndState { get; set; }
+        public bool AverageStats{ get; set; }
 
         public string NameStatisticFile { get; set; }
         public string NameEndStateFile { get; set; }
