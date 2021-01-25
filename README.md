@@ -1,4 +1,6 @@
-![A glider in Conway's Game of Life](/.github/conway_logo.gif)
+<p align="center">
+<img src="./.github/conway_logo.gif" alt="A glider in Conway's Game of Life">
+</p>
 
 # conway
 
