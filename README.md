@@ -14,6 +14,10 @@ Always use a branch for any changes!
 
 `dotnet conway.dll input.csv`
 
+## direct run
+
+`dotnet input.csv`
+
 ### CSV-Format
 
 ```csv
