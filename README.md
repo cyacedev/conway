@@ -21,15 +21,18 @@ Always use a branch for any changes!
 ### CSV-Format
 
 ```csv
-FieldSize,ProbabilityForLife,NumberOfIterations,NumberOfSimulations,SaveStatistics,NameStatisticFile
-100,50,1000,1000,true,out/test/testfile
+FieldSize,ProbabilityForLife,NumberOfIterations,NumberOfSimulations,SaveStatistics,SaveEndState,AverageStats,NameStatisticFile,NameEndStateFile
+10,100,1000,10,true,false,true,out/outputfile,out/endstate
 ```
 
-| Parameter           | Explanation                                                               |
-| :------------------ | :------------------------------------------------------------------------ |
-| FieldSize           | The size of the Field in which the starting civilzation will be generated |
-| ProbabilityForLife  | The Probability in Promille for a cell to be alive at the start           |
-| NumberOfIterations  | Amount of Iterations that a simulation should work trough                 |
-| NumberOfSimulations | Number of Repetitions with the same parameters but new generated cells    |
-| SaveStatistics      | If the programm should save statistics                                    |
-| NameStatisticFile   | Where the program should store the stats and the name of the files        |
+| Parameter           | Explanation                                                                               |
+| :------------------ | :---------------------------------------------------------------------------------------- |
+| FieldSize           | The size of the Field in which the starting civilzation will be generated                 |
+| ProbabilityForLife  | The Probability in Promille for a cell to be alive at the start                           |
+| NumberOfIterations  | Amount of Iterations that a simulation should work trough                                 |
+| NumberOfSimulations | Number of Repetitions with the same parameters but new generated cells                    |
+| SaveStatistics      | If the programm should save statistics                                                    |
+| SaveEndState        | If the programm should save the last state of the field in a simulation                   |
+| AverageStats        | If the program should save averages over all simulations of the same type                 |
+| NameStatisticFile   | Where the program should store the stats and the name of the files                        |
+| NameEndStateFile    | Where the program should store the last state of the simulation and the name of the files |
