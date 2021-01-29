@@ -14,6 +14,9 @@ namespace Conway
         private readonly int _checkForIterations = 5;
 
         private Dictionary<CellCoords, Cell> _cells;
+        private List<ChangedCellCoords> _previouslyChangedCoords;
+        private List<ChangedCellCoords> _newChangedCoords;
+        
         private List<IterationStats> _stats;
         private int _currentIteration;
         private List<Dictionary<CellCoords, Cell>> _repetitionList;
@@ -21,6 +24,8 @@ namespace Conway
         public ConwayGame()
         {
             _cells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
+            _previouslyChangedCoords = new List<ChangedCellCoords>();
+            _newChangedCoords = new List<ChangedCellCoords>();
             _stats = new List<IterationStats>();
             _repetitionList = new List<Dictionary<CellCoords, Cell>>();
         }
@@ -77,6 +82,7 @@ namespace Conway
                 {
                     Console.WriteLine($"Predefined Generated Cells: {_cells.Count}");
                 }
+                FillChangedPositionsOnStart();
                 int checkStarted = 0;
                 bool iterationRepeated = false;
                 bool iterationDead = false;
@@ -247,81 +253,88 @@ namespace Conway
             }
         }
 
+        private void FillChangedPositionsOnStart(){
+            this._newChangedCoords = new List<ChangedCellCoords>();
+            foreach(KeyValuePair<CellCoords, Cell> cell in _cells){
+                this._newChangedCoords.Add(new ChangedCellCoords(cell.Key, true));
+            }
+        }
+
         private void IterateSimulation()
         {
+            
+            this._previouslyChangedCoords = new List<ChangedCellCoords>(this._newChangedCoords);
+            this._newChangedCoords.Clear();
             Dictionary<CellCoords, Cell> checkedCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
             CellAverageNeighbours averageNeighbours = new CellAverageNeighbours();
             CellDensity iterationDensity = new CellDensity(_cells.Count);
-            var newCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
+            //var newCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
             var deadCells = new Dictionary<CellCoords, Cell>(new CellCoordsComparer());
             var stat = new IterationStats();
             stat.Iteration = _currentIteration;
+            foreach(KeyValuePair<CellCoords, Cell> cell in _cells){
+                iterationDensity.AddCellCoordToCheck(cell.Key);
+            }
+            iterationDensity.CalculateDensity();
+            stat.IterationDensity = iterationDensity.cellDensity;
             stat.CellCount = _cells.Count;
             stat.PositiveHeat = 0;
             stat.NegativeHeat = 0;
-            foreach (System.Collections.Generic.KeyValuePair<CellCoords, Cell> cell in _cells)
+            foreach (ChangedCellCoords changedCellCoords in this._previouslyChangedCoords)
             {
-                for (int y = cell.Key.y - 1; y <= (cell.Key.y + 1); y++)
+                for (int y = changedCellCoords.cellCoords.y - 1; y <= (changedCellCoords.cellCoords.y + 1); y++)
                 {
-                    for (int x = cell.Key.x - 1; x <= (cell.Key.x + 1); x++)
+                    for (int x = changedCellCoords.cellCoords.x - 1; x <= (changedCellCoords.cellCoords.x + 1); x++)
                     {
-                        if (!checkedCells.TryAdd(new CellCoords(x, y), cell.Value))
+                        if (!checkedCells.TryAdd(new CellCoords(x, y), new Cell()))
                         {
                             continue;
                         }
                         int neighbours = GetAliveNeighbours(x, y);
                         Cell currentCell;
                         bool exists = _cells.TryGetValue(new CellCoords(x, y), out currentCell);
-                        if (exists)
-                        {
-                            iterationDensity.AddCellCoordToCheck(new CellCoords(x, y));
-                            averageNeighbours.AddCellNeighbourEntry(neighbours);
-                        }
 
                         switch (neighbours)
                         {
                             case 2:
-                                if (exists)
-                                {
-                                    newCells.TryAdd(new CellCoords(x, y), currentCell);
-                                }
+                                //dead cells remain dead, living cells remain living (no actions)
                                 break;
                             case 3:
-                                if (exists)
+                                //if living cell, remains living
+                                if (!exists)
                                 {
-                                    newCells.TryAdd(new CellCoords(x, y), currentCell);
-                                }
-                                else
-                                {
-                                    bool Added = newCells.TryAdd(new CellCoords(x, y), currentCell);
-                                    if (Added)
-                                    {
-                                        stat.PositiveHeat++;
-                                    }
+                                    this._newChangedCoords.Add(new ChangedCellCoords(new CellCoords(x,y),true));
+                                    stat.PositiveHeat++;
                                 }
                                 break;
                             default:
                                 if (exists)
                                 {
-                                    bool Added = deadCells.TryAdd(new CellCoords(x, y), currentCell);
-                                    if (Added)
-                                    {
-                                        stat.NegativeHeat++;
-                                    }
+                                    this._newChangedCoords.Add(new ChangedCellCoords(new CellCoords(x,y),false));
+                                    stat.NegativeHeat++;
                                 }
                                 break;
                         }
                     }
                 }
             }
-            iterationDensity.CalculateDensity();
-            averageNeighbours.CalculateAverage();
-            stat.IterationDensity = iterationDensity.cellDensity;
+
+            int addedCells = 0;
+            int removedCells = 0;
+            foreach(ChangedCellCoords changedCoords in this._newChangedCoords){
+                if(changedCoords.newLife){
+                    _cells.Add(changedCoords.cellCoords, new Cell());
+                    addedCells++;
+                }else{
+                    _cells.Remove(changedCoords.cellCoords);
+                    removedCells++;
+                }
+            }
+
             stat.IterationAverageNeighbours = averageNeighbours.averageNeighbourNumber;
             checkedCells.Clear();
             checkedCells = null;
             _stats.Add(stat);
-            _cells = newCells;
         }
 
         private int GetAliveNeighbours(int coordX, int coordY)

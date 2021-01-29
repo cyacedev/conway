@@ -17,6 +17,19 @@ namespace Conway
         }
     }
 
+
+    public class ChangedCellCoords
+    {
+        public CellCoords cellCoords { get; private set; }
+        public bool newLife { get; private set; }
+
+        public ChangedCellCoords(CellCoords changedCoords, bool newLife)
+        {
+            this.cellCoords = changedCoords;
+            this.newLife = newLife;
+        }
+    }
+
     class CellAverageNeighbours
     {
         public List<int> _neighbours { get; private set; }
@@ -87,7 +100,8 @@ namespace Conway
             int length = toX.x - fromX.x + 1;
             int height = toY.y - fromY.y + 1;
             int numberOfFields = length * height;
-            if(numberOfFields == 0){
+            if (numberOfFields == 0)
+            {
                 Console.WriteLine($"length * height = 0: fromx({fromX.x}) tox({toX.x}), fromy({fromY.y}) toy({toY.y})");
             }
             this.cellDensity = this.cellCount / (float)numberOfFields;
@@ -130,4 +144,5 @@ namespace Conway
         {
         }
     }
+
 }
