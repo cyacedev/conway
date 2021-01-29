@@ -90,7 +90,7 @@ namespace Conway
                 {
                     _currentIteration = i + 1;
                     IterateSimulation();
-                    //Console.WriteLine($"Current iteration: {i}");
+
                     //For average stats, simulation must add the dead iterations
                     if(_cells.Count == 0 && !input.AverageStats){
                         iterationDead = true;
